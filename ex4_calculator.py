@@ -109,6 +109,7 @@ class Calculator(QMainWindow):
 
         for btn_txt in self.buttons:
             btn = QPushButton(btn_txt)
+            btn.pressed.connect(self.on_btn_clicked)
             if row == 4:
                 if btn_txt == "0":
                     self.layout.addWidget(btn, row+1, col, 1, 2)
@@ -133,30 +134,72 @@ class Calculator(QMainWindow):
             if btn_txt == "=":
                 btn.setStyleSheet(style_last_col)
     
+    def on_btn_clicked(self):
+        '''
+        Slot for all buttons
+        '''
+        btn = self.sender()
+        btn_text = btn.text()
+        
+        if btn_text in self.buttons_fcn:
+            self.buttons_fcn[btn_text]()
+        elif btn_text == ".":
+            if "." not in self.display.text():
+                self.display.setText(self.display.text() + btn_text)
+        else:
+            if self.result:
+                self.display.setText(btn_text)
+                self.result = None
+            else:
+                self.display.setText(self.display.text() + btn_text)
+            
+            self.last_number = float(self.display.text())
+        
     def clear(self):
         '''Clear line edit'''
         self.display.clear()
         
     def change_sign(self):
-        pass
+        '''
+        Change the sign
+        '''
+        self.display.setText(str(float(self.display.text()) * -1))
     
     def percent(self):
-        pass
+        self.display.setText(str(float(self.display.text()) * 0.01))
     
     def divide(self):
-        pass
+        self.last_operator = "/"
+        self.first_number = float(self.display.text())
+        self.display.clear()
     
     def multiply(self):
-        pass
+        self.last_operator = "*"
+        self.first_number = float(self.display.text())
+        self.display.clear()
     
     def subtract(self):
-        pass
+        self.last_operator = "-"
+        self.first_number = float(self.display.text())
+        self.display.clear()
     
     def add(self):
-        pass
+        self.last_operator = "+"
+        self.first_number = float(self.display.text())
+        self.display.clear()
     
     def equal(self):
+        if self.last_operator == "+":
+            self.result = self.first_number + self.last_number
+        elif self.last_operator == "-":
+            self.result = self.first_number - self.last_number
+        elif self.last_operator == "*":
+            self.result = self.first_number * self.last_number
+        elif self.last_operator == "/":
+            self.result = self.first_number / self.last_number
+            
         self.display.setText(str(round(self.result, 4)))
+        self.first_number = round(self.result, 4)
         
     def setup_display(self):
         self.display = QLineEdit()
